@@ -64,6 +64,9 @@ class FormHelper extends HtmlHelper {
             case "image":
                 $attributes["alt"] = $text;
                 $attributes["type"] = "image";
+                if(!$this->external($attributes["src"])):
+                    $attributes["src"] = Mapper::url("/images/" . $attributes["src"]);
+                endif;
             case "input":
                 $attributes["value"] = $text;
                 $button = $this->tag("input", null, $attributes, false);
@@ -84,13 +87,27 @@ class FormHelper extends HtmlHelper {
         $options = array_merge(array(
             "name" => $name,
             "options" => array(),
-            "value" => null
+            "value" => null,
+            "empty" => false
         ), $options);
         $selectOptions = array_unset($options, "options");
+        if(($empty = array_unset($options, "empty")) !== false):
+            $keys = array_keys($selectOptions);
+            if(is_array($empty)):
+                $emptyKeys = array_keys($empty);
+                $key = $emptyKeys[0];
+                $values = array_merge($empty, $selectOptions);
+            else:
+                $key = $empty;
+                $values = array_merge(array($empty), $selectOptions);
+            endif;
+            array_unshift($keys, $key);
+            $selectOptions = array_combine($keys, $values);
+        endif;
         $content = "";
         foreach($selectOptions as $key => $value):
             $optionAttr = array("value" => $key);
-            if($key === $options["value"]):
+            if((string) $key === (string) $options["value"]):
                 $optionAttr["selected"] = true;
                 unset($options["value"]);
             endif;
@@ -129,6 +146,47 @@ class FormHelper extends HtmlHelper {
         return $this->output($content);
     }
     /**
+     *  Cria um conjunto de caixa de seleção para a data.
+     * 
+     *  @param string $name Nome do conjunto de caixas de seleção
+     *  @param array $options Opções das caixas de seleção
+     *  @return string Conjunto de caixa de seleção
+     */
+    public function date($name, $options = array()) {
+        if(!is_null($options["value"])):
+            $date = strtotime($options["value"]);
+        else:
+            $date = time();
+        endif;
+        $options = array_merge(array(
+            "value" => null,
+            "startYear" => 1980,
+            "endYear" => date("Y"),
+            "currentDay" => date("d", $date),
+            "currentMonth" => date("m", $date),
+            "currentYear" => date("Y", $date)
+        ), $options);
+        $days = array_range(1, 31);
+        $months = array_range(1, 12);
+        $years = array_range($options["startYear"], $options["endYear"]);
+        $selectDay = $this->select($name . "[d]", array(
+            "value" => $options["currentDay"],
+            "options" => $days,
+            "id" => $options["id"] . "D"
+        ));
+        $selectMonth = $this->select($name . "[m]", array(
+            "value" => $options["currentMonth"],
+            "options" => $months,
+            "id" => $options["id"] . "M"
+        ));
+        $selectYear = $this->select($name . "[y]", array(
+            "value" => $options["currentYear"],
+            "options" => $years,
+            "id" => $options["id"] . "Y"
+        ));
+        return $this->output($selectDay . $selectMonth . $selectYear);
+    }
+    /**
      *  Cria caixa de entrada formatada e com label.
      * 
      *  @param string $name Nome do campo de entrada
@@ -145,23 +203,30 @@ class FormHelper extends HtmlHelper {
         ), $options);
         $label = array_unset($options, "label");
         $div = array_unset($options, "div");
-        if($options["type"] == "select"):
-            $selectOptions = $options;
-            unset($selectOptions["type"]);
-            $input = $this->select($name, $selectOptions);
-        elseif($options["type"] == "textarea"):
-            $input = $this->tag("textarea", array_unset($options, "value"), $options);
-        elseif($options["type"] == "radio"):
-            $label = false;
-            $input = $this->radio($name, $options);
-        else:
-            if($options["type"] == "hidden"):
-                $div = $label = false;
-            elseif($name == "password"):
-                $options["type"] = "password";
-            endif;
-            $input = $this->tag("input", null, $options, false);
-        endif;
+        switch($options["type"]):
+            case "select":
+                $selectOptions = $options;
+                unset($selectOptions["type"]);
+                $input = $this->select($name, $selectOptions);
+                break;
+            case "radio":
+                $label = false;
+                $input = $this->radio($name, $options);
+                break;
+            case "date":
+                $input = $this->date($name, $options);
+                break;
+            case "textarea":
+                $input = $this->tag("textarea", array_unset($options, "value"), $options);
+                break;
+            default:
+                if($options["type"] == "hidden"):
+                    $div = $label = false;
+                elseif($name == "password"):
+                    $options["type"] = "password";
+                endif;
+                $input = $this->tag("input", null, $options, false);
+        endswitch;
         if($label):
             $input = $this->tag("label", $label, array("for" => $options["id"])) . $input;
         endif;
@@ -173,65 +238,6 @@ class FormHelper extends HtmlHelper {
         endif;
         return $this->output($input);
     }
-    /**
-     *  Cria um conjunto de caixa de seleção para a data.
-     * 
-     *  @param string $name Nome do conjunto de caixas de seleção
-     *  @param int $start_year Ano inicial da seleção
-     *  @param int $end_year Ano final da seleção
-     *  @param int $current_month Mês corrente
-     *  @param int $current_day Dia corrente
-     *  @param int $current_year Ano corrente
-     *  @return string Retorna um conjunto de caixa de seleção
-     */
-    public function dateselect($name = "date", $start_year = 1980, $end_year = null, $current_month = null, $current_day = null, $current_year = null) {
-        //if default values are not passed, default values should be the current date
-        $year_now = (int) date("Y");
-        $day_now = (int) date("d");
-        $month_now = (int) date("m");
-        if(!$end_year) $end_year = $year_now;
-        if(!$current_year) $current_year = $year_now;
-        if(!$current_month) $current_month = $month_now;
-        if(!$current_day) $current_day = $day_now;
-
-        //day select
-        $select_day = '<select name="' . $name . '[d]" id="' . $name . '_day">';
-
-        //day select options
-        for($i = 1; $i < 32; $i++):
-            $select_day .= '<option value="' . $i . '"';
-            if($i == $current_day) $select_day .= ' selected="selected"';
-            $select_day .= '>' . $i . '</option>';
-        endfor;
-
-        $select_day .= "</select>";
-
-        //month select
-        $select_month = '<select name="' . $name . '[m]" id="' . $name . '_month">';
-
-        //month select options
-        for($i = 1; $i < 13; $i++):
-            $select_month .= '<option value="' . $i . '"';
-            if($i == $current_month) $select_month .= ' selected="selected"';
-            $select_month .= '>' . $i . '</option>';
-        endfor;
-
-        $select_month .= "</select>";
-
-        //year select
-        $select_year = '<select name="' . $name . '[y]" id="' . $name . '_year">';
-
-        //year select options
-        for($i = $start_year; $i < $end_year + 1; $i++):
-            $select_year .= '<option value="' . $i . '"';
-            if($i == $current_year) $select_year .= ' selected="selected"';
-            $select_year .= '>' . $i . '</option>';
-        endfor;
-
-        $select_year .= "</select>";
-
-        return $select_day . $select_month . $select_year;
-	}
 }
 
 ?>

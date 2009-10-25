@@ -88,9 +88,21 @@ class AuthComponent extends Component {
       *  Define um cookie seguro.
       */
     public $secure = false;
+    /**
+      *  Define o nível de recursão do modelo.
+      */
+    public $recursion;
+    /**
+      *  Mensagem de erro para falha no login.
+      */
+    public $loginError = "loginFailed";
+    /**
+      *  Mensagem de erro para acesso não autorizado.
+      */
+    public $authError = "notAuthorized";
 
     /**
-      *  Inicializa o component.
+      *  Inicializa o componente.
       *
       *  @param object $controller Objeto Controller
       *  @return void
@@ -99,13 +111,13 @@ class AuthComponent extends Component {
         $this->controller = $controller;
     }
     /**
-      *  Faz as operações necessárias após a inicialização do controller.
+      *  Faz as operações necessárias após a inicialização do componente.
       *
       *  @param object $controller Objeto Controller
       *  @return void
       */
     public function startup(&$controller) {
-        $this->permissions[$this->loginAction] = true;
+        $this->allow($this->loginAction);
         if($this->autoCheck):
             $this->check();
         endif;
@@ -129,7 +141,8 @@ class AuthComponent extends Component {
       */
     public function check() {
         if(!$this->authorized()):
-            Cookie::write("action", Mapper::here());
+            $this->setAction(Mapper::here());
+            $this->error($this->authError);
             $this->controller->redirect($this->loginAction);
             return false;
         endif;
@@ -141,18 +154,22 @@ class AuthComponent extends Component {
      *  @return boolean Verdadeiro caso o usuário esteja autorizado
      */
     public function authorized() {
-        if($this->loggedIn()):
-            return true;
-        else:
-            $here = Mapper::here();
-            $authorized = $this->authorized;
-            foreach($this->permissions as $url => $permission):
-                if(Mapper::match($url, $here)):
-                    $authorized = $permission;
-                endif;
-            endforeach;
-            return $authorized;
-        endif;
+        return $this->loggedIn() || $this->isPublic();
+    }
+    /**
+      *  Verifica se uma action é pública.
+      *
+      *  @return boolean Verdadeiro se a action é pública
+      */
+    public function isPublic() {
+        $here = Mapper::here();
+        $authorized = $this->authorized;
+        foreach($this->permissions as $url => $permission):
+            if(Mapper::match($url, $here)):
+                $authorized = $permission;
+            endif;
+        endforeach;
+        return $authorized;
     }
     /**
      *  Libera URLs a serem visualizadas sem autenticação.
@@ -217,7 +234,8 @@ class AuthComponent extends Component {
             "conditions" => array_merge(
                 $this->userScope,
                 $conditions
-            )
+            ),
+            "recursion" => is_null($this->recursion) ? $userModel->recursion : $this->recursion
         );
         return $this->user = $userModel->first($params);
     }
@@ -236,33 +254,37 @@ class AuthComponent extends Component {
       *  @return void
       */
     public function login() {
-        if(!$this->loggedIn()):
-            if(!empty($this->controller->data)):
-                $password = $this->hash($this->controller->data[$this->fields["password"]]);
-                $user = $this->identify(array(
-                    $this->fields["username"] => $this->controller->data[$this->fields["username"]],
-                    $this->fields["password"] => $password
-                ));
-                if(!empty($user)):
-                    Cookie::set("domain", $this->domain);
-                    Cookie::set("path", $this->path);
-                    Cookie::set("secure", $this->secure);
-                    Cookie::write("user_id", $user[$this->fields["id"]], $this->expires);
-                    Cookie::write("password", $password, $this->expires);
-                    $redirect = Cookie::read("action");
-                    if(is_null($redirect)):
-                        $redirect = $this->loginRedirect;
-                    else:
-                        Cookie::delete("action");
-                    endif;
-                    $this->controller->redirect($redirect);
-                else:
-                    $this->controller->set("authError", "wrongData");
+        if(!empty($this->controller->data)):
+            $password = $this->hash($this->controller->data[$this->fields["password"]]);
+            $user = $this->identify(array(
+                $this->fields["username"] => $this->controller->data[$this->fields["username"]],
+                $this->fields["password"] => $password
+            ));
+            if(!empty($user)):
+                $this->authenticate($user[$this->fields["id"]], $password);
+                $redirect = $this->getAction();
+                if(!$redirect):
+                    $redirect = $this->loginRedirect;
                 endif;
+                $this->controller->redirect($this->loginRedirect);
+            else:
+                $this->error($this->loginError);
             endif;
-        else:
-            $this->controller->redirect($this->loginRedirect);
         endif;
+    }
+    /**
+      *  Autentica um usuário.
+      *
+      *  @param string $id ID do usuário
+      *  @param string $password Senha do usuário
+      *  @return void
+      */
+    public function authenticate($id, $password) {
+        Cookie::set("domain", $this->domain);
+        Cookie::set("path", $this->path);
+        Cookie::set("secure", $this->secure);
+        Cookie::write("user_id", $id, $this->expires);
+        Cookie::write("password", $password, $this->expires);
     }
     /**
       *  Efetua o logout do usuário.
@@ -270,6 +292,9 @@ class AuthComponent extends Component {
       *  @return void
       */
     public function logout() {
+        Cookie::set("domain", $this->domain);
+        Cookie::set("path", $this->path);
+        Cookie::set("secure", $this->secure);
         Cookie::delete("user_id");
         Cookie::delete("password");
         $this->controller->redirect($this->logoutRedirect);
@@ -281,14 +306,44 @@ class AuthComponent extends Component {
       *  @return mixed Campo escolhido ou todas as informações do usuário
       */
     public function user($field = null) {
-        if(empty($this->user)):
+        if($this->loggedIn()):
+            if(is_null($field)):
+                return $this->user;
+            else:
+                return $this->user[$field];
+            endif;
+        else:
             return null;
         endif;
-        if(is_null($field)):
-            return $this->user;
-        else:
-            return $this->user[$field];
-        endif;
+    }
+    /**
+      *  Armazena a action requisitada quando a autorização falhou.
+      *
+      *  @param string $action Endereço da action
+      *  @return void
+      */
+    public function setAction($action) {
+        Session::write("Auth.action", $action);
+    }
+    /**
+      *  Retorna a action requisitada quando a autorização falhou.
+      *
+      *  @return string Endereço da action
+      */
+    public function getAction() {
+        $action  = Session::read("Auth.action");
+        Session::delete("Auth.action");
+        return $action;
+    }
+    /**
+      *  Define um erro ocorrido durante a autenticação.
+      *
+      *  @param string $type Nome do erro
+      *  @param array $details Detalhes do erro
+      *  @return void
+      */
+    public function error($type, $details = array()) {
+        Session::write("Auth.error", $type);
     }
 }
 
