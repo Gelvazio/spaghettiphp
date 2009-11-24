@@ -1,10 +1,7 @@
 version 0.2 (2009-12-01)
-<<<<<<< HEAD
-=======
     * HtmlHelper::image() now has default alt and title attributes
     * Added HtmlHelper::imagelink()
     * Added Session::writeFlash() and Session::flash()
->>>>>>> 9d9239e7193c505e087fb3e5c32e3359f8cd3044
     * Added AccessControlComponent
     * Added new welcome and error screens
     * Added PaginationHelper::numbers()
