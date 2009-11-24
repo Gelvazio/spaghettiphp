@@ -103,11 +103,32 @@ class HtmlHelper extends Helper {
      *  @return string HTML da imagem a ser inserida
      */
     public function image($src, $attr = array(), $full = false) {
+        $attr = array_merge(
+            array(
+                "alt" => "",
+                "title" => isset($attr["alt"]) ? $attr["alt"] : ""
+            ),
+            $attr
+        );
         if(!$this->external($src)):
             $src = Mapper::url("/images/" . $src, $full);
         endif;
         $attr["src"] = $src;
         return $this->output($this->tag("img", null, $attr, true));
+    }
+    /**
+      *  Short description.
+      *
+      *  @param string $src
+      *  @param string $url
+      *  @param array $img_attr
+      *  @param array $attr
+      *  @param boolean $full
+      *  @return string
+      */
+    public function imagelink($src, $url, $img_attr = array(), $attr = array(), $full = false) {
+        
+        return $this->link($this->image($src, $img_attr, $full), $url, $attr, $full);
     }
     /**
      *  Cria elementos de folha de estilho para serem usados no HTML.

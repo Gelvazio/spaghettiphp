@@ -100,6 +100,8 @@ class AuthComponent extends Component {
       *  Mensagem de erro para acesso não autorizado.
       */
     public $authError = "notAuthorized";
+    
+    public $authenticate = false;
 
     /**
       *  Inicializa o componente.
@@ -121,6 +123,9 @@ class AuthComponent extends Component {
         if($this->autoCheck):
             $this->check();
         endif;
+        if(Mapper::match($this->loginAction)):
+            $this->login();
+        endif;
     }
     /**
       *  Finaliza o component.
@@ -130,7 +135,7 @@ class AuthComponent extends Component {
       */
     public function shutdown(&$controller) {
         if(Mapper::match($this->loginAction)):
-            $this->login();
+            $this->loginRedirect();
         endif;
     }
     /**
@@ -261,15 +266,20 @@ class AuthComponent extends Component {
                 $this->fields["password"] => $password
             ));
             if(!empty($user)):
-                $this->authenticate($user[$this->fields["id"]], $password);
-                $redirect = $this->getAction();
-                if(!$redirect):
-                    $redirect = $this->loginRedirect;
-                endif;
-                $this->controller->redirect($this->loginRedirect);
+                $this->authenticate = true;
             else:
                 $this->error($this->loginError);
             endif;
+        endif;
+    }
+    
+    public function loginRedirect() {
+        if($this->authenticate):
+            $this->authenticate($this->user["id"], $this->user["password"]);
+            if($redirect = $this->getAction()):
+                $this->loginRedirect = $redirect;
+            endif;
+            $this->controller->redirect($this->loginRedirect);
         endif;
     }
     /**
@@ -343,7 +353,7 @@ class AuthComponent extends Component {
       *  @return void
       */
     public function error($type, $details = array()) {
-        Session::write("Auth.error", $type);
+        Session::writeFlash("Auth.error", $type);
     }
 }
 

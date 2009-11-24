@@ -53,7 +53,7 @@ class Controller extends Object {
     /**
      *  Variáveis a serem enviadas para a view.
      */
-    public $viewData = array();
+    public $view = array();
     public $methods = array();
 
     public function __construct() {
@@ -69,7 +69,7 @@ class Controller extends Object {
         endif;
         
         $this->methods = $this->getMethods();
-        $this->data = array_merge($_POST, $_FILES);
+        $this->data = array_merge_recursive($_POST, $_FILES);
         $this->loadComponents();
         $this->loadModels();
     }
@@ -104,7 +104,7 @@ class Controller extends Object {
      *  @param string $event Evento a ser executado
      *  @return void
      */
-    public function componentEvent($event = null) {
+    public function componentEvent($event) {
         foreach($this->components as $component):
             $className = "{$component}Component";
             if(can_call_method($this->$className, $event)):
@@ -173,8 +173,14 @@ class Controller extends Object {
      */
     public function render($action = null, $layout = null) {
         $this->beforeRender();
-        $view = new View($this);
+        $view = new View;
+        $view->autoLayout = $this->autoLayout;
+        $view->helpers = $this->helpers;
+        $view->params = $this->params;
+        $view->layout = $this->layout;
+        $view->data = $this->view;
         $this->autoRender = false;
+
         return $this->output .= $view->render($action, $layout);
     }
     /**
@@ -194,7 +200,7 @@ class Controller extends Object {
      *  @param boolean $exit Verdadeiro para encerrar o script após o redirecionamento
      *  @return void
      */
-    public function redirect($url = "", $status = null, $exit = true) {
+    public function redirect($url, $status = null, $exit = true) {
         $this->autoRender = false;
         $codes = array(
             100 => "Continue",
@@ -248,7 +254,7 @@ class Controller extends Object {
      * 
      *  @param string $var Nome da variável a ser definida
      *  @param mixed $value Valor da variável
-     *  @return mixed Valor da variável
+     *  @return object Objeto Controller
      */
     public function set($var, $value = null) {
         if(is_array($var)):
@@ -256,21 +262,19 @@ class Controller extends Object {
                 $this->set($key, $value);
             endforeach;
         elseif(!is_null($value)):
-            return $this->viewData[$var] = $value;
+            return $this->view[$var] = $value;
         endif;
-        return true;
+        return $this;
     }
     /**
-     *  Recupera uma variável de Controller::viewData.
+     *  Recupera uma variável de Controller::view.
      *
      *  @param string $var Nome da variável a ser lida
      *  @return mixed Valor da variável
      */
     public function get($var = null) {
-        if(!is_null($var)):
-            if(isset($this->viewData[$var])):
-                return $this->viewData[$var];
-            endif;
+        if(isset($this->view[$var])):
+            return $this->view[$var];
         endif;
         return false;
     }
@@ -280,7 +284,7 @@ class Controller extends Object {
      *  @param string $key Chave do valor a ser retornado
      *  @return string Valor do parâmetro
      */
-    public function param($key = null) {
+    public function param($key) {
         if(isset($this->params["named"][$key])):
             return $this->params["named"][$key];
         elseif(in_array($key, array_keys($this->params))):
