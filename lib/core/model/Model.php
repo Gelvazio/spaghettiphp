@@ -37,30 +37,34 @@ class Model {
     /**
       *  Short description.
       *
-      *  @param string $param
+      *  @throws Exception
+      *  @param string $name
       *  @return mixed
       */
-    public function __get($param) {
-        if(in_array($param, $this->getters)):
-            $getter = 'get' . Inflector::camelize($param);
+    public function __get($name) {
+        $name = $this->alias($name);
+        if(in_array($name, $this->getters)):
+            $getter = 'get' . Inflector::camelize($name);
             return $this->{$getter}();
-        else:
-            return $this->get($param);
+        elseif(array_key_exists($name, $this->resultSet)):
+            return $this->resultSet[$name];
         endif;
+        throw new Exception;
     }
     /**
       *  Short description.
       *
-      *  @param string $param
+      *  @param string $name
       *  @param mixed $value
       *  @return void
       */
-    public function __set($param, $value) {
-        if(in_array($param, $this->setters)):
-            $setter = 'set' . Inflector::camelize($param);
-            $this->{$setter}($value);
+    public function __set($name, $value) {
+        $name = $this->alias($name);
+        if(in_array($name, $this->setters)):
+            $setter = 'set' . Inflector::camelize($name);
+            return $this->{$setter}($value);
         else:
-            $this->set($param, $value);
+            return $this->set($name, $value);
         endif;
     }
     /**
@@ -69,45 +73,20 @@ class Model {
       *  @param string $field
       *  @return string
       */
-    protected function alias($field) {
-        if(in_array($field, $this->aliasAttribute)):
-            $field = array_search($field, $this->aliasAttribute);
+    protected function alias($name) {
+        if(array_key_exists($name, $this->aliasAttribute)):
+            return $this->aliasAttribute[$name];
         endif;
-        return $field;
+        return $name;
     }
-    /**
-      *  Short description.
-      *
-      *  @param string $param
-      *  @return mixed
-      *  @throws Exception
-      */
-    public function get($param) {
-        $param = $this->alias($param);
-        if(isset($this->resultSet[$param])):
-            return $this->resultSet[$param];
-        else:
-            // @todo throw UndefinedPropertyException
-            throw new Exception();
-        endif;
+    public function get() {
     }
-    /**
-      *  Short description.
-      *
-      *  @param string $param
-      *  @param mixed $value
-      *  @return void
-      *  @todo implement mass-assignment
-      */
-    public function set($param, $value = null) {
-        if(is_array($param)):
-            foreach($param as $key => $value):
-                $this->set($key, $value);
-            endforeach;
-            return;
-        endif;
-
-        $param = $this->alias($param);
-        $this->resultSet[$param] = $value;
+    public function set($name, $value) {
+        return $this->resultSet[$name] = $value;
+    }
+    public function setAttributes(array $attributes) {
+        foreach($attributes as $name => $value):
+            $this->{$name} = $value;
+        endforeach;
     }
 }

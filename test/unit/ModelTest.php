@@ -43,28 +43,26 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $this->User->name);
     }
     public function testShouldSetMultipleAttributesWithSet() {
-        $this->User->set(array(
+        $this->User->setAttributes(array(
             'name' => 'spaghetti',
             'password' => 'spaghetti'
         ));
         
         $this->assertEquals('spaghetti', $this->User->name);
-        // This is wrong!
-        // @todo implement setters in Model::set
-        $this->assertEquals('spaghetti', $this->User->password);
+        $this->assertEquals(md5('spaghetti'), $this->User->password);
     }
 }
 
 class User extends Model {
     public $aliasAttribute = array(
-        'password' => 'passwd',
-        'name' => 'myName'
+        'passwd' => 'password',
+        'myName' => 'name'
     );
     public $getters = array('username');
     public $setters = array('password');
     
     public function getUsername() {
-        return $this->get('name');
+        return $this->resultSet['name'];
     }
     public function setPassword($password) {
         $this->set('password', md5($password));
