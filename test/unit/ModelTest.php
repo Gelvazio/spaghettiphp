@@ -91,6 +91,18 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
     }
+    public function testShouldCreateANewRecordWithClosure() {
+        if(version_compare(PHP_VERSION, '5.3') < 0):
+            return $this->assertTrue(true);
+        endif;
+        $user = $this->User->create(function(&$self) {
+            $self->name = 'spaghettiphp';
+            $self->password = 'spaghettiphp';
+        });
+        
+        $this->assertEquals('spaghettiphp', $user->name);
+        $this->assertEquals(md5('spaghettiphp'), $user->password);
+    }
 }
 
 class User extends Model {

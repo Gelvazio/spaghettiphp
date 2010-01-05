@@ -37,6 +37,9 @@ class Model {
     public function __construct($record = null) {
         if(is_null($record)):
             $this->created = true;
+        elseif(is_callable($record)):
+            $self =& $this;
+            call_user_func($record, $self);
         elseif(is_array($record)):
             $this->setAttributes($record);
             $this->created = true;
