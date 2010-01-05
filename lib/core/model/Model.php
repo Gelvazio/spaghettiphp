@@ -38,6 +38,7 @@ class Model {
         if(is_null($record)):
             $this->created = true;
         elseif(is_array($record)):
+            $this->setAttributes($record);
             $this->created = true;
         else:
             $this->created = false;
@@ -95,8 +96,9 @@ class Model {
       *
       *  @return void
       */
-    public function create() {
-        return new self();
+    public function create($record = null) {
+        $class = get_class($this);
+        return new $class($record);
     }
     /**
       *  Short description.

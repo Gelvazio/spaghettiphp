@@ -82,6 +82,15 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertTrue($user->created);
     }
+    public function testShouldCreateANewRecordWithAttributes() {
+        $user = $this->User->create(array(
+            'name' => 'spaghettiphp',
+            'password' => 'spaghettiphp'
+        ));
+        
+        $this->assertEquals('spaghettiphp', $user->name);
+        $this->assertEquals(md5('spaghettiphp'), $user->password);
+    }
 }
 
 class User extends Model {
