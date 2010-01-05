@@ -42,6 +42,17 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->User->myName = $expected = 'spaghettiphp';
         $this->assertEquals($expected, $this->User->name);
     }
+    public function testShouldSetMultipleAttributesWithSet() {
+        $this->User->set(array(
+            'name' => 'spaghetti',
+            'password' => 'spaghetti'
+        ));
+        
+        $this->assertEquals('spaghetti', $this->User->name);
+        // This is wrong!
+        // @todo implement setters in Model::set
+        $this->assertEquals('spaghetti', $this->User->password);
+    }
 }
 
 class User extends Model {
