@@ -77,6 +77,11 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(md5('spaghettiphp'), $this->User->password);
         $this->assertFalse($this->User->admin);
     }
+    public function testShouldCreateANewEmptyRecord() {
+        $user = $this->User->create();
+        
+        $this->assertTrue($user->created);
+    }
 }
 
 class User extends Model {

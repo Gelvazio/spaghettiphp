@@ -32,6 +32,17 @@ class Model {
       */
     public $whitelist = array();
     
+    public $created = null;
+    
+    public function __construct($record = null) {
+        if(is_null($record)):
+            $this->created = true;
+        elseif(is_array($record)):
+            $this->created = true;
+        else:
+            $this->created = false;
+        endif;
+    }
     /**
       *  Short description.
       *
@@ -78,6 +89,14 @@ class Model {
         endif;
         
         return $name;
+    }
+    /**
+      *  Short description.
+      *
+      *  @return void
+      */
+    public function create() {
+        return new self();
     }
     /**
       *  Short description.
