@@ -11,6 +11,11 @@ class ModelTest extends PHPUnit_Framework_TestCase {
     public function tearDown() {
         $this->User = null;
     }
+    public function testBaseInstanceShouldNotBeEditable() {
+        $user = new User(false);
+        
+        $this->assertFalse($user->created);
+    }
     public function testShouldSetAndGetFieldForSingleRecord() {
         $user = $this->User->create();
         $user->name = $expected = 'spaghettiphp';
