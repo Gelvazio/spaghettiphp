@@ -15,10 +15,8 @@ class Model {
         if(in_array($param, $this->getters)):
             $getter = 'get' . Inflector::camelize($param);
             return $this->{$getter}();
-        elseif(isset($this->resultSet[$param])):
-            return $this->resultSet[$param];
         else:
-            throw new Exception();
+            return $this->get($param);
         endif;
     }
     public function __set($param, $value) {
@@ -26,7 +24,7 @@ class Model {
             $setter = 'set' . Inflector::camelize($param);
             $this->{$setter}($value);
         else:
-            $this->resultSet[$param] = $value;
+            $this->set($param, $value);
         endif;
     }
     public function get($param) {
