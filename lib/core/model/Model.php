@@ -80,6 +80,9 @@ class Model {
       *  @return void
       */
     public function set($param, $value) {
+        if(in_array($param, $this->aliasAttribute)):
+            $param = array_search($param, $this->aliasAttribute);
+        endif;    
         $this->resultSet[$param] = $value;
     }
  }
