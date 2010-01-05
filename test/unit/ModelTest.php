@@ -30,7 +30,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($expected, $user->password);
     }
     public function testShouldThrowExceptionWhenFieldDoesNotExist() {
-        $this->setExpectedException('Exception');
+        $this->setExpectedException('UndefinedPropertyException');
         $user = $this->User->create();
         $expected = $user->password;
     }

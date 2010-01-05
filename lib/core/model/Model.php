@@ -6,6 +6,8 @@
  *  @copyright Copyright 2008-2010, Spaghetti* Framework (http://spaghettiphp.org/)
  */
 
+import('core.model.Exceptions');
+
 class Model {
     /**
       *  Short description.
@@ -58,7 +60,7 @@ class Model {
     /**
       *  Short description.
       *
-      *  @throws Exception
+      *  @throws UndefinedPropertyException
       *  @param string $name
       *  @return mixed
       *  @todo throw exception when record is not unique
@@ -72,7 +74,7 @@ class Model {
             return $this->get($name);
         endif;
         
-        throw new Exception;
+        throw new UndefinedPropertyException;
     }
     /**
       *  Short description.
