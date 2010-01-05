@@ -12,70 +12,79 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->User = null;
     }
     public function testShouldSetAndGetFieldForSingleRecord() {
-        $this->User->name = $expected = 'spaghettiphp';
+        $user = $this->User->create();
+        $user->name = $expected = 'spaghettiphp';
         
-        $this->assertEquals($expected, $this->User->name);
+        $this->assertEquals($expected, $user->name);
     }
     public function testShouldPassFieldsThroughSettersWhenRequired() {
-        $this->User->password = 'spaghettiphp';
+        $user = $this->User->create();
+        $user->password = 'spaghettiphp';
         $expected = md5('spaghettiphp');
         
-        $this->assertEquals($expected, $this->User->password);
+        $this->assertEquals($expected, $user->password);
     }
     public function testShouldThrowExceptionWhenFieldDoesNotExist() {
         $this->setExpectedException('Exception');
-        $expected = $this->User->password;
+        $user = $this->User->create();
+        $expected = $user->password;
     }
     public function testShouldPassFieldsThroughGettersWhenRequired() {
-        $this->User->name = $expected = 'spaghettiphp';
-        $result = $this->User->username;
+        $user = $this->User->create();
+        $user->name = $expected = 'spaghettiphp';
 
-        $this->assertEquals($expected, $result);
+        $this->assertEquals($expected, $user->username);
     }
     public function testShouldUseAliasesForGettingFields() {
-        $this->User->password = 'spaghettiphp';
+        $user = $this->User->create();
+        $user->password = 'spaghettiphp';
         $expected = md5('spaghettiphp');
         
-        $this->assertEquals($expected, $this->User->passwd);
+        $this->assertEquals($expected, $user->passwd);
     }
     public function testShouldUseAliasesForSettingFields() {
-        $this->User->myName = $expected = 'spaghettiphp';
-        $this->assertEquals($expected, $this->User->name);
+        $user = $this->User->create();
+        $user->myName = $expected = 'spaghettiphp';
+        $this->assertEquals($expected, $user->name);
     }
     public function testShouldSetMultipleAttributesWithSet() {
-        $this->User->setAttributes(array(
+        $user = $this->User->create();
+        $user->setAttributes(array(
             'name' => 'spaghetti',
             'password' => 'spaghetti'
         ));
         
-        $this->assertEquals('spaghetti', $this->User->name);
-        $this->assertEquals(md5('spaghetti'), $this->User->password);
+        $this->assertEquals('spaghetti', $user->name);
+        $this->assertEquals(md5('spaghetti'), $user->password);
     }
     public function testShouldNotSetProtectedAttributesWithMassSetting() {
-        $this->User->blacklist = array('admin');
-        $this->User->admin = false;
-        $this->User->setAttributes(array(
+        $user = $this->User->create();
+        // @todo check static blacklisting and stuff
+        $user->blacklist = array('admin');
+        $user->admin = false;
+        $user->setAttributes(array(
             'name' => 'spaghettiphp',
             'password' => 'spaghettiphp',
             'admin' => true
         ));
         
-        $this->assertEquals('spaghettiphp', $this->User->name);
-        $this->assertEquals(md5('spaghettiphp'), $this->User->password);
-        $this->assertFalse($this->User->admin);
+        $this->assertEquals('spaghettiphp', $user->name);
+        $this->assertEquals(md5('spaghettiphp'), $user->password);
+        $this->assertFalse($user->admin);
     }
     public function testShouldOnlySetUnprotectedAttributesWithMassSetting() {
-        $this->User->whitelist = array('name', 'password');
-        $this->User->admin = false;
-        $this->User->setAttributes(array(
+        $user = $this->User->create();
+        $user->whitelist = array('name', 'password');
+        $user->admin = false;
+        $user->setAttributes(array(
             'name' => 'spaghettiphp',
             'password' => 'spaghettiphp',
             'admin' => true
         ));
         
-        $this->assertEquals('spaghettiphp', $this->User->name);
-        $this->assertEquals(md5('spaghettiphp'), $this->User->password);
-        $this->assertFalse($this->User->admin);
+        $this->assertEquals('spaghettiphp', $user->name);
+        $this->assertEquals(md5('spaghettiphp'), $user->password);
+        $this->assertFalse($user->admin);
     }
     public function testShouldCreateANewEmptyRecord() {
         $user = $this->User->create();
@@ -99,6 +108,15 @@ class ModelTest extends PHPUnit_Framework_TestCase {
             $self->name = 'spaghettiphp';
             $self->password = 'spaghettiphp';
         });
+        
+        $this->assertEquals('spaghettiphp', $user->name);
+        $this->assertEquals(md5('spaghettiphp'), $user->password);
+    }
+    public function testShouldCreateANewRecordWithNew() {
+        $user = new User(array(
+            'name' => 'spaghettiphp',
+            'password' => 'spaghettiphp'
+        ));
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
