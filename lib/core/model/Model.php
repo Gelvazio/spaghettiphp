@@ -34,6 +34,12 @@ class Model {
     
     public $created = null;
     
+    /**
+      *  Short description.
+      *
+      *  @param mixed $record
+      *  @return object $this
+      */
     public function __construct($record = null) {
         if(is_null($record)):
             $this->created = true;
@@ -46,6 +52,7 @@ class Model {
         else:
             $this->created = false;
         endif;
+        return $this;
     }
     /**
       *  Short description.
@@ -117,7 +124,7 @@ class Model {
       *  Short description.
       *
       *  @param array $attributes
-      *  @return object
+      *  @return object $this
       */
     public function setAttributes(array $attributes) {
         $blacklist = !empty($this->blacklist);
