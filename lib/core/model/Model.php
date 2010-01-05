@@ -61,6 +61,7 @@ class Model {
       *  @throws Exception
       *  @param string $name
       *  @return mixed
+      *  @todo throw exception when record is not unique
       */
     public function __get($name) {
         $name = $this->alias($name);
@@ -79,6 +80,7 @@ class Model {
       *  @param string $name
       *  @param mixed $value
       *  @return mixed
+      *  @todo throw exception when record is not unique
       */
     public function __set($name, $value) {
         $name = $this->alias($name);
@@ -116,6 +118,7 @@ class Model {
       *
       *  @param string $name
       *  @return mixed
+      *  @todo throw exception when record is not unique
       */
     public function get($name) {
         return $this->resultSet[$name];
@@ -126,6 +129,7 @@ class Model {
       *  @param string $name
       *  @param mixed $value
       *  @return mixed
+      *  @todo throw exception when record is not unique
       */
     public function set($name, $value) {
         return $this->resultSet[$name] = $value;
@@ -135,6 +139,7 @@ class Model {
       *
       *  @param array $attributes
       *  @return object $this
+      *  @todo throw exception when record is not unique
       */
     public function setAttributes(array $attributes) {
         $blacklist = !empty($this->blacklist);
