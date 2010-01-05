@@ -26,12 +26,22 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->setExpectedException('Exception');
         $expected = $this->User->password;
     }
+    public function testShouldPassFieldsThroughGettersWhenRequired() {
+        $this->User->name = $expected = 'spaghettiphp';
+        $result = $this->User->username;
+
+        $this->assertEquals($expected, $result);
+    }
 }
 
 class User extends Model {
+    public $getters = array('username');
     public $setters = array('password');
     
+    public function getUsername() {
+        return $this->get('name');
+    }
     public function setPassword($password) {
-        $this->password = md5($password);
+        $this->set('password', md5($password));
     }
 }

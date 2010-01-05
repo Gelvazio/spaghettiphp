@@ -7,11 +7,15 @@
  */
 
 class Model {
+    public $getters = array();
     protected $resultSet = array();
     public $setters = array();
     
     public function __get($param) {
-        if(isset($this->resultSet[$param])):
+        if(in_array($param, $this->getters)):
+            $getter = 'get' . Inflector::camelize($param);
+            return $this->{$getter}();
+        elseif(isset($this->resultSet[$param])):
             return $this->resultSet[$param];
         else:
             throw new Exception();
@@ -25,4 +29,14 @@ class Model {
             $this->resultSet[$param] = $value;
         endif;
     }
-}
+    public function get($param) {
+        if(isset($this->resultSet[$param])):
+            return $this->resultSet[$param];
+        else:
+            throw new Exception();
+        endif;
+    }
+    public function set($param, $value) {
+        $this->resultSet[$param] = $value;
+    }
+ }
