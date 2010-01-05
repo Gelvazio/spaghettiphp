@@ -6,7 +6,7 @@ import('core.model.Model');
 
 class ModelTest extends PHPUnit_Framework_TestCase {
     public function setUp() {
-        $this->User = new User;
+        $this->User = new User(false);
     }
     public function tearDown() {
         $this->User = null;
