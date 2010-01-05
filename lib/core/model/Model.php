@@ -13,7 +13,6 @@ class Model {
     public $aliasAttribute = array();
     /**
       *  Short description.
-      *  @todo implement black listing
       */
     public $blacklist = array();
     /**
@@ -30,7 +29,6 @@ class Model {
     public $setters = array();
     /**
       *  Short description.
-      *  @todo implement white listing
       */
     public $whitelist = array();
     
@@ -98,8 +96,16 @@ class Model {
       *  @return object
       */
     public function setAttributes(array $attributes) {
+        $blacklist = !empty($this->blacklist);
+        $whitelist = !empty($this->whitelist);
         foreach($attributes as $name => $value):
-            $this->{$name} = $value;
+            $protected = (
+                $blacklist && in_array($name, $this->blacklist) or
+                $whitelist && !in_array($name, $this->whitelist)
+            );
+            if(!$protected):
+                $this->{$name} = $value;
+            endif;
         endforeach;
         
         return $this;

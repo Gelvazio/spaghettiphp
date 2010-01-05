@@ -51,6 +51,32 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('spaghetti', $this->User->name);
         $this->assertEquals(md5('spaghetti'), $this->User->password);
     }
+    public function testShouldNotSetProtectedAttributesWithMassSetting() {
+        $this->User->blacklist = array('admin');
+        $this->User->admin = false;
+        $this->User->setAttributes(array(
+            'name' => 'spaghettiphp',
+            'password' => 'spaghettiphp',
+            'admin' => true
+        ));
+        
+        $this->assertEquals('spaghettiphp', $this->User->name);
+        $this->assertEquals(md5('spaghettiphp'), $this->User->password);
+        $this->assertFalse($this->User->admin);
+    }
+    public function testShouldOnlySetUnprotectedAttributesWithMassSetting() {
+        $this->User->whitelist = array('name', 'password');
+        $this->User->admin = false;
+        $this->User->setAttributes(array(
+            'name' => 'spaghettiphp',
+            'password' => 'spaghettiphp',
+            'admin' => true
+        ));
+        
+        $this->assertEquals('spaghettiphp', $this->User->name);
+        $this->assertEquals(md5('spaghettiphp'), $this->User->password);
+        $this->assertFalse($this->User->admin);
+    }
 }
 
 class User extends Model {
