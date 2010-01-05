@@ -32,9 +32,18 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals($expected, $result);
     }
+    public function testShouldUseAliasesForGettingFields() {
+        $this->User->password = 'spaghettiphp';
+        $expected = md5('spaghettiphp');
+        
+        $this->assertEquals($expected, $this->User->passwd);
+    }
 }
 
 class User extends Model {
+    public $aliasAttribute = array(
+        'password' => 'passwd'
+    );
     public $getters = array('username');
     public $setters = array('password');
     

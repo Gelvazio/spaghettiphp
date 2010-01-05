@@ -62,6 +62,9 @@ class Model {
       *  @return mixed
       */
     public function get($param) {
+        if(in_array($param, $this->aliasAttribute)):
+            $param = array_search($param, $this->aliasAttribute);
+        endif;    
         if(isset($this->resultSet[$param])):
             return $this->resultSet[$param];
         else:
