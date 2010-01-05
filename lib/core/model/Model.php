@@ -43,6 +43,7 @@ class Model {
     public function __construct($record = null) {
         if(is_null($record)):
             $this->created = true;
+        // @info PHP 5.3+ only
         elseif(is_callable($record)):
             $self =& $this;
             call_user_func($record, $self);
@@ -67,7 +68,7 @@ class Model {
             $getter = 'get' . Inflector::camelize($name);
             return $this->{$getter}();
         elseif(array_key_exists($name, $this->resultSet)):
-            return $this->resultSet[$name];
+            return $this->get($name);
         endif;
         
         throw new Exception;
@@ -109,6 +110,15 @@ class Model {
     public function create($record = null) {
         $class = get_class($this);
         return new $class($record);
+    }
+    /**
+      *  Short description.
+      *
+      *  @param string $name
+      *  @return mixed
+      */
+    public function get($name) {
+        return $this->resultSet[$name];
     }
     /**
       *  Short description.
