@@ -29,7 +29,6 @@ class Model {
       *
       *  @param string $param
       *  @return mixed
-      *  @todo implement aliases
       */
     public function __get($param) {
         if(in_array($param, $this->getters)):
@@ -45,7 +44,6 @@ class Model {
       *  @param string $param
       *  @param mixed $value
       *  @return void
-      *  @todo implement aliases
       */
     public function __set($param, $value) {
         if(in_array($param, $this->setters)):
