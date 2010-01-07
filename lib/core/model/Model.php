@@ -16,15 +16,15 @@ class Model extends Object {
     /**
       *  Short description.
       */
+    protected $attributes = array();
+    /**
+      *  Short description.
+      */
     public $blacklist = array();
     /**
       *  Short description.
       */
     public $getters = array();
-    /**
-      *  Short description.
-      */
-    protected $resultSet = array();
     /**
       *  Short description.
       */
@@ -51,7 +51,7 @@ class Model extends Object {
             $record($self);
 
         elseif(is_array($record)):
-            $this->setAttributes($record);
+            $this->attributes($record);
 
         else:
             $this->created = false;
@@ -72,7 +72,7 @@ class Model extends Object {
         if(in_array($name, $this->getters)):
             $getter = 'get' . Inflector::camelize($name);
             return $this->{$getter}();
-        elseif(array_key_exists($name, $this->resultSet)):
+        elseif(array_key_exists($name, $this->attributes)):
             return $this->get($name);
         endif;
         
@@ -111,41 +111,11 @@ class Model extends Object {
     /**
       *  Short description.
       *
-      *  @return void
-      */
-    public function create($record = null) {
-        $class = get_class($this);
-        return new $class($record);
-    }
-    /**
-      *  Short description.
-      *
-      *  @param string $name
-      *  @return mixed
-      *  @todo throw exception when record is not unique
-      */
-    public function get($name) {
-        return $this->resultSet[$name];
-    }
-    /**
-      *  Short description.
-      *
-      *  @param string $name
-      *  @param mixed $value
-      *  @return mixed
-      *  @todo throw exception when record is not unique
-      */
-    public function set($name, $value) {
-        return $this->resultSet[$name] = $value;
-    }
-    /**
-      *  Short description.
-      *
       *  @param array $attributes
       *  @return object $this
       *  @todo throw exception when record is not unique
       */
-    public function setAttributes(array $attributes) {
+    public function attributes(array $attributes) {
         $blacklist = !empty($this->blacklist);
         $whitelist = !empty($this->whitelist);
         foreach($attributes as $name => $value):
@@ -159,5 +129,35 @@ class Model extends Object {
         endforeach;
         
         return $this;
+    }
+    /**
+      *  Short description.
+      *
+      *  @return object
+      */
+    public function create($record = null) {
+        $class = get_class($this);
+        return new $class($record);
+    }
+    /**
+      *  Short description.
+      *
+      *  @param string $name
+      *  @return mixed
+      *  @todo throw exception when record is not unique
+      */
+    public function get($name) {
+        return $this->attributes[$name];
+    }
+    /**
+      *  Short description.
+      *
+      *  @param string $name
+      *  @param mixed $value
+      *  @return mixed
+      *  @todo throw exception when record is not unique
+      */
+    public function set($name, $value) {
+        return $this->attributes[$name] = $value;
     }
 }

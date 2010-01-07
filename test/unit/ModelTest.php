@@ -54,7 +54,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
     }
     public function testShouldSetMultipleAttributesWithSet() {
         $user = $this->User->create();
-        $user->setAttributes(array(
+        $user->attributes(array(
             'name' => 'spaghetti',
             'password' => 'spaghetti'
         ));
@@ -66,7 +66,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $user = $this->User->create();
         $user->blacklist = array('admin');
         $user->admin = false;
-        $user->setAttributes(array(
+        $user->attributes(array(
             'name' => 'spaghettiphp',
             'password' => 'spaghettiphp',
             'admin' => true
@@ -80,7 +80,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         $user = $this->User->create();
         $user->whitelist = array('name', 'password');
         $user->admin = false;
-        $user->setAttributes(array(
+        $user->attributes(array(
             'name' => 'spaghettiphp',
             'password' => 'spaghettiphp',
             'admin' => true
@@ -139,7 +139,7 @@ class User extends Model {
     public $setters = array('password');
     
     public function getUsername() {
-        return $this->resultSet['name'];
+        return $this->name;
     }
     public function setPassword($password) {
         $this->set('password', md5($password));
