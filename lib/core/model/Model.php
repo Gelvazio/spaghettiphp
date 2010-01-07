@@ -45,10 +45,10 @@ class Model extends Object {
     public function __construct($record = null) {
         if(is_null($record)):
             $this->created = true;
-        // @info PHP 5.3+ only
+        // callbacks are available in PHP 5.3+ only
         elseif(is_callable($record)):
             $self =& $this;
-            call_user_func($record, $self);
+            $record($self);
         elseif(is_array($record)):
             $this->setAttributes($record);
             $this->created = true;
