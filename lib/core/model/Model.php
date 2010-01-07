@@ -34,7 +34,7 @@ class Model extends Object {
       */
     public $whitelist = array();
     
-    public $created = null;
+    public $created = true;
     
     /**
       *  Short description.
@@ -44,17 +44,19 @@ class Model extends Object {
       */
     public function __construct($record = null) {
         if(is_null($record)):
-            $this->created = true;
-        // callbacks are available in PHP 5.3+ only
+
         elseif(is_callable($record)):
+            // callbacks are available in PHP 5.3+ only
             $self =& $this;
             $record($self);
+
         elseif(is_array($record)):
             $this->setAttributes($record);
-            $this->created = true;
+
         else:
             $this->created = false;
         endif;
+
         return $this;
     }
     /**

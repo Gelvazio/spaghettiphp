@@ -64,7 +64,6 @@ class ModelTest extends PHPUnit_Framework_TestCase {
     }
     public function testShouldNotSetProtectedAttributesWithMassSetting() {
         $user = $this->User->create();
-        // @todo check static blacklisting and stuff
         $user->blacklist = array('admin');
         $user->admin = false;
         $user->setAttributes(array(
@@ -104,6 +103,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
+        $this->assertTrue($user->created);
     }
     public function testShouldCreateANewRecordWithClosure() {
         if(version_compare(PHP_VERSION, '5.3') < 0):
@@ -116,6 +116,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
+        $this->assertTrue($user->created);
     }
     public function testShouldCreateANewRecordWithNew() {
         $user = new User(array(
@@ -125,6 +126,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
+        $this->assertTrue($user->created);
     }
 }
 
