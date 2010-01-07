@@ -8,7 +8,7 @@
 
 import('core.model.Exceptions');
 
-class Model {
+class Model extends Object {
     /**
       *  Short description.
       */
