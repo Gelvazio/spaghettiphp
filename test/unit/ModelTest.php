@@ -6,15 +6,15 @@ import('core.model.Model');
 
 class ModelTest extends PHPUnit_Framework_TestCase {
     public function setUp() {
-        $this->User = new User(false);
+        $this->User = new User(false, false, true);
     }
     public function tearDown() {
         $this->User = null;
     }
     public function testBaseInstanceShouldNotBeEditable() {
-        $user = new User(false);
+        $user = new User(false, false, true);
         
-        $this->assertFalse($user->created);
+        $this->assertFalse($user->newRecord);
     }
     public function testShouldSetAndGetFieldForSingleRecord() {
         $user = $this->User->create();
@@ -93,7 +93,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
     public function testShouldCreateANewEmptyRecord() {
         $user = $this->User->create();
         
-        $this->assertTrue($user->created);
+        $this->assertTrue($user->newRecord);
     }
     public function testShouldCreateANewRecordWithAttributes() {
         $user = $this->User->create(array(
@@ -103,7 +103,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
-        $this->assertTrue($user->created);
+        $this->assertTrue($user->newRecord);
     }
     public function testShouldCreateANewRecordWithClosure() {
         if(version_compare(PHP_VERSION, '5.3') < 0):
@@ -116,7 +116,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
-        $this->assertTrue($user->created);
+        $this->assertTrue($user->newRecord);
     }
     public function testShouldCreateANewRecordWithNew() {
         $user = new User(array(
@@ -126,7 +126,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('spaghettiphp', $user->name);
         $this->assertEquals(md5('spaghettiphp'), $user->password);
-        $this->assertTrue($user->created);
+        $this->assertTrue($user->newRecord);
     }
 }
 

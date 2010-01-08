@@ -28,13 +28,19 @@ class Model extends Object {
     /**
       *  Short description.
       */
+    protected $mainInstance = false;
+    /**
+      *  Short description.
+      */
+    public $newRecord = false;
+    /**
+      *  Short description.
+      */
     public $setters = array();
     /**
       *  Short description.
       */
     public $whitelist = array();
-    
-    public $created = true;
     
     /**
       *  Short description.
@@ -42,19 +48,16 @@ class Model extends Object {
       *  @param mixed $record
       *  @return object $this
       */
-    public function __construct($record = null) {
-        if(is_null($record)):
-
-        elseif(is_callable($record)):
+    public function __construct($record = null, $new_record = true, $main_instance = false) {
+        $this->newRecord = $new_record;
+        $this->mainInstance = $main_instance;
+        
+        if(is_callable($record)):
             // callbacks are available in PHP 5.3+ only
             $self =& $this;
             $record($self);
-
         elseif(is_array($record)):
             $this->attributes($record);
-
-        else:
-            $this->created = false;
         endif;
 
         return $this;
@@ -65,7 +68,6 @@ class Model extends Object {
       *  @throws UndefinedPropertyException
       *  @param string $name
       *  @return mixed
-      *  @todo throw exception when record is not unique
       */
     public function __get($name) {
         $name = $this->alias($name);
@@ -84,7 +86,6 @@ class Model extends Object {
       *  @param string $name
       *  @param mixed $value
       *  @return mixed
-      *  @todo throw exception when record is not unique
       */
     public function __set($name, $value) {
         $name = $this->alias($name);
@@ -113,7 +114,6 @@ class Model extends Object {
       *
       *  @param array $attributes
       *  @return object $this
-      *  @todo throw exception when record is not unique
       */
     public function attributes(array $attributes) {
         $blacklist = !empty($this->blacklist);
@@ -137,14 +137,13 @@ class Model extends Object {
       */
     public function create($record = null) {
         $class = get_class($this);
-        return new $class($record);
+        return new $class($record, true);
     }
     /**
       *  Short description.
       *
       *  @param string $name
       *  @return mixed
-      *  @todo throw exception when record is not unique
       */
     public function get($name) {
         return $this->attributes[$name];
@@ -155,7 +154,6 @@ class Model extends Object {
       *  @param string $name
       *  @param mixed $value
       *  @return mixed
-      *  @todo throw exception when record is not unique
       */
     public function set($name, $value) {
         return $this->attributes[$name] = $value;
